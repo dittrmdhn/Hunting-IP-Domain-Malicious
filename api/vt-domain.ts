@@ -4,13 +4,13 @@ import fetch from "node-fetch";
 const VT_API_KEY = process.env.VT_API_KEY;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-	// tambahkan header CORS
+	// CORS headers
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
 	res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
 	if (req.method === "OPTIONS") {
-		return res.status(200).end(); // handle preflight
+		return res.status(200).end();
 	}
 
 	const { domain } = req.query;
