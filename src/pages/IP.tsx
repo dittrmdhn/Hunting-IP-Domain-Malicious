@@ -61,17 +61,7 @@ export default function IP() {
 
 			// Fetch and interpret VT response
 			try {
-				const resp = await fetch(
-					`https://www.virustotal.com/api/v3/ip_addresses/${encodeURIComponent(
-						ip
-					)}`,
-					{
-						headers: {
-							"x-apikey": apiKey,
-							Accept: "application/json",
-						},
-					}
-				);
+				const resp = await fetch(`/api/vt-ip?ip=${encodeURIComponent(ip)}`);
 
 				// friendly handling based on status codes
 				if (resp.status === 400) {

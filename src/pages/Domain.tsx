@@ -61,15 +61,7 @@ export default function Domain() {
 			// Fetch and interpret VT response
 			try {
 				const resp = await fetch(
-					`https://www.virustotal.com/api/v3/domains/${encodeURIComponent(
-						domain
-					)}`,
-					{
-						headers: {
-							"x-apikey": apiKey,
-							Accept: "application/json",
-						},
-					}
+					`/api/vt-domain?domain=${encodeURIComponent(domain)}`
 				);
 
 				// friendly handling based on status codes
