@@ -61,7 +61,11 @@ export default function IP() {
 
 			// Fetch and interpret VT response
 			try {
-				const resp = await fetch(`/api/vt-ip?ip=${encodeURIComponent(ip)}`);
+				const resp = await fetch("/api/vt-ip", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ ip, apiKey }),
+				});
 
 				// friendly handling based on status codes
 				if (resp.status === 400) {

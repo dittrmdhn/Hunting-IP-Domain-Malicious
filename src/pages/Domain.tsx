@@ -60,9 +60,11 @@ export default function Domain() {
 
 			// Fetch and interpret VT response
 			try {
-				const resp = await fetch(
-					`/api/vt-domain?domain=${encodeURIComponent(domain)}`
-				);
+				const resp = await fetch("/api/vt-domain", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ domain, apiKey }),
+				});
 
 				// friendly handling based on status codes
 				if (resp.status === 400) {
