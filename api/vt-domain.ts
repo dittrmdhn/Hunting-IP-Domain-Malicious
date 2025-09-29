@@ -1,43 +1,47 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-const apiKeys = [
-	process.env.VT_API_KEY_1,
-	process.env.VT_API_KEY_2,
-	process.env.VT_API_KEY_3,
-].filter(Boolean) as string[];
-let currentKeyIndex = 0;
-/** * Ambil API key secara bergantian (round robin) */ function getApiKey(): string {
-	if (apiKeys.length === 0) {
-		throw new Error("Tidak ada API key VirusTotal yang tersedia");
-	}
-	const key = apiKeys[currentKeyIndex];
-	currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-	return key;
-}
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import fetch from "node-fetch";
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+	// Handle CORS preflight
+	if (req.method === "OPTIONS") {
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+		res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+		return res.status(200).end();
+	}
+
 	if (req.method !== "POST") {
 		return res.status(405).json({ error: "Method not allowed" });
 	}
+
+	const { domain, apiKey } = req.body;
+
+	if (!domain || typeof domain !== "string") {
+		return res.status(400).json({ error: "Domain required" });
+	}
+
+	if (!apiKey || typeof apiKey !== "string") {
+		return res.status(400).json({ error: "API key required" });
+	}
+
 	try {
-		const { domain } = req.body;
-		if (!domain || typeof domain !== "string") {
-			return res.status(400).json({ error: "Domain harus diisi" });
-		}
-		const apiKey = getApiKey();
-		const url = `https://www.virustotal.com/api/v3/domains/${domain}`;
-		const vtResponse = await fetch(url, {
-			headers: { accept: "application/json", "x-apikey": apiKey },
-		});
-		if (!vtResponse.ok) {
-			const text = await vtResponse.text();
-			return res
-				.status(vtResponse.status)
-				.json({ error: "Gagal mengambil data dari VirusTotal", details: text });
-		}
-		const data = await vtResponse.json();
-		return res.status(200).json(data);
-	} catch (err: any) {
-		return res
-			.status(500)
-			.json({ error: "Internal server error", details: err.message });
+		const response = await fetch(
+			`https://www.virustotal.com/api/v3/domains/${encodeURIComponent(domain)}`,
+			{
+				headers: {
+					"x-apikey": apiKey,
+					Accept: "application/json",
+				},
+			}
+		);
+
+		const data = await response.json();
+
+		// Set CORS headers for actual response
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		return res.status(response.status).json(data);
+	} catch (err) {
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		return res.status(500).json({ error: "Failed to fetch" });
 	}
 }
