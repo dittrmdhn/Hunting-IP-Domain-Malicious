@@ -83,7 +83,7 @@ export default function Domain() {
 					}
 				}
 			} catch (err) {
-				pushResult({ domain, result: "failed to fetch" });
+				pushResult({ domain, result: "failed to fetch." });
 			}
 
 			await wait(350); // delay biar animasi enak
