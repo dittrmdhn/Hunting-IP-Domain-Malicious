@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
-import Input from "../components/Input";
 import Button from "../components/Button";
 import ResultItem from "../components/ResultItem";
 
@@ -10,7 +8,6 @@ type Output = {
 };
 
 export default function Domain() {
-	const [apiKey, setApiKey] = useLocalStorage("vt_api_key", "");
 	const [bulk, setBulk] = useState<string>(""); // textarea content
 	const [processing, setProcessing] = useState(false);
 	const [results, setResults] = useState<Output[]>([]);
@@ -20,6 +17,7 @@ export default function Domain() {
 	function handleSelect(item: string) {
 		setSelected((prev) => (prev === item ? null : item));
 	}
+
 	// sanitize single domain string
 	const sanitize = (s: string) =>
 		s
@@ -35,10 +33,6 @@ export default function Domain() {
 	// main handler (sequential)
 	const handleSubmit = async (e?: React.FormEvent) => {
 		if (e) e.preventDefault();
-		if (!apiKey?.trim()) {
-			alert("Masukkan API key VirusTotal terlebih dahulu.");
-			return;
-		}
 
 		const lines = bulk
 			.split(/\r?\n/)
@@ -58,15 +52,13 @@ export default function Domain() {
 			const domain = lines[i];
 			setProgressIndex(i + 1);
 
-			// Fetch and interpret VT response
 			try {
 				const resp = await fetch("/api/vt-domain", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ domain, apiKey }),
+					body: JSON.stringify({ domain }),
 				});
 
-				// friendly handling based on status codes
 				if (resp.status === 400) {
 					pushResult({ domain, result: "invalid domain" });
 				} else if (resp.status === 404) {
@@ -84,8 +76,6 @@ export default function Domain() {
 					} else if (suspicious > 0) {
 						pushResult({ domain, result: `${suspicious} suspicious` });
 					} else {
-						// show "clean" in requested format: "<clean> Clean – <suspicious> Suspicious"
-						// but per your last request show "clean - N suspicious" (we'll show "X Clean - Y Suspicious")
 						pushResult({
 							domain,
 							result: `Clean - ${suspicious} Suspicious`,
@@ -96,15 +86,13 @@ export default function Domain() {
 				pushResult({ domain, result: "failed to fetch" });
 			}
 
-			// small delay to make sequence visible/animated (adjustable)
-			await wait(350);
+			await wait(350); // delay biar animasi enak
 		}
 
 		setProcessing(false);
 		setProgressIndex(0);
 	};
 
-	// push result to visible list (will render with animation in ResultItem)
 	function pushResult(o: Output) {
 		setResults((prev) => [...prev, o]);
 	}
@@ -112,14 +100,6 @@ export default function Domain() {
 	return (
 		<div className="max-w-3xl mx-auto mt-10 px-4">
 			<h1 className="text-2xl font-bold mb-4">Domain / URL Hunting</h1>
-
-			<p className="block mb-2 font-medium text-vt">VirusTotal API Key</p>
-			<Input
-				value={apiKey}
-				onChange={(e) => setApiKey(e.target.value)}
-				placeholder="Masukkan API Key"
-				type="password"
-			/>
 
 			<p className="block mt-4 mb-2 font-medium text-rows">
 				Domain List (1 per rows)
