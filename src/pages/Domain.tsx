@@ -36,7 +36,7 @@ export default function Domain() {
 	const handleSubmit = async (e?: React.FormEvent) => {
 		if (e) e.preventDefault();
 		if (!apiKey?.trim()) {
-			alert("Masukkan API key VirusTotal terlebih dahulu.");
+			alert("Input API key please!");
 			return;
 		}
 
@@ -46,7 +46,7 @@ export default function Domain() {
 			.filter((l) => l.length > 0);
 
 		if (lines.length === 0) {
-			alert("Masukkan minimal satu domain (1 per baris).");
+			alert("Input at least one domain (1 per line).");
 			return;
 		}
 
@@ -117,7 +117,7 @@ export default function Domain() {
 			<Input
 				value={apiKey}
 				onChange={(e) => setApiKey(e.target.value)}
-				placeholder="Masukkan API Key"
+				placeholder="Input API Key"
 				type="password"
 			/>
 
