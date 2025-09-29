@@ -117,7 +117,7 @@ export default function Domain() {
 			<Input
 				value={apiKey}
 				onChange={(e) => setApiKey(e.target.value)}
-				placeholder="Masukkan API Key yayayaya"
+				placeholder="Masukkan API Key"
 				type="password"
 			/>
 
